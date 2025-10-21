@@ -1,0 +1,30 @@
+# Go build cache
+/bin
+/build
+/main
+
+# Dependencies & tooling
+vendor/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE / editor files
+.vscode/
+.idea/
+*.swp
+
+# Logs & temp files
+*.log
+*.out
+tmp/
+*.tmp
+
+# Git
+.git
+.gitignore
+
+# Env files (optional)
+.env.local
+.env.dev
