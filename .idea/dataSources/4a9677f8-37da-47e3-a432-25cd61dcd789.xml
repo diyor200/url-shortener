@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<dataSource name="@localhost">
+<dataSource name="url_shortener@localhost">
   <database-model serializer="dbm" dbms="MONGO" family-id="MONGO" format-version="4.53">
     <root id="1">
       <ServerVersion>7.0.25</ServerVersion>
     </root>
-    <schema id="2" parent="1" name="admin"/>
-    <schema id="3" parent="1" name="config"/>
-    <schema id="4" parent="1" name="local"/>
-    <schema id="5" parent="1" name="url_shortener"/>
+    <schema id="2" parent="1" name="url_shortener">
+      <Current>1</Current>
+      <LastIntrospectionLocalTimestamp>2025-10-29.12:25:05</LastIntrospectionLocalTimestamp>
+    </schema>
   </database-model>
 </dataSource>

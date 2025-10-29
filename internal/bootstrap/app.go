@@ -8,6 +8,7 @@ import (
 
 	"github.com/diyor200/url-shortener/internal/config"
 	"github.com/diyor200/url-shortener/internal/gateway/rest"
+	_ "github.com/diyor200/url-shortener/internal/migrations"
 	"github.com/redis/go-redis/v9"
 	migrate "github.com/xakep666/mongo-migrate"
 	"go.mongodb.org/mongo-driver/v2/mongo"
