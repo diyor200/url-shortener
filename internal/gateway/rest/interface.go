@@ -1,7 +1,11 @@
 package rest
 
-import "github.com/diyor200/url-shortener/internal/domain"
+import (
+	"context"
+	"github.com/diyor200/url-shortener/internal/domain"
+)
 
 type shortenUC interface {
-	Shorten(longURL string) (domain.URL, error)
+	Shorten(ctx context.Context, longURL string) (domain.URL, error)
+	Get(ctx context.Context, shortURL string) (domain.URL, error)
 }
