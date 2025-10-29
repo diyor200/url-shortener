@@ -7,6 +7,4 @@ type URL struct {
 	Long       string
 	ShortenURL string
 	CreatedAt  time.Time
-	UpdatedAt  time.Time
-	ExpiresAt  time.Time
 }

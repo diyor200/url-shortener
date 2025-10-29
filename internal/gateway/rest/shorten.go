@@ -9,12 +9,11 @@ import (
 
 func (h *Handler) shorten(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		http.Error(w, "method now allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req scheme.URL
-
+	var req scheme.URLRequest
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -29,14 +28,21 @@ func (h *Handler) shorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.shortenUC.Shorten(req.LongURL)
+	res, err := h.shortenUC.Shorten(r.Context(), req.URL)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
 		return
 	}
 
-	resp, err := json.Marshal(res)
+	url := scheme.URL{
+		ID:        res.ID,
+		ShortURL:  "http://" + r.Host + "/r/" + res.ShortenURL,
+		LongURL:   res.Long,
+		CreatedAt: scheme.ConvertTimeToString(res.CreatedAt),
+	}
+
+	resp, err := json.Marshal(url)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(err.Error()))
