@@ -16,8 +16,7 @@ WORKDIR /app
 
 RUN apk add --no-cache ca-certificates
 
-COPY --from=builder main .
-COPY .env .
+COPY --from=builder /app/main .
 COPY static ./static
 COPY template ./template
 

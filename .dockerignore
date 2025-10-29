@@ -26,5 +26,5 @@ tmp/
 .gitignore
 
 # Env files (optional)
-.env.local
+.env
 .env.dev
