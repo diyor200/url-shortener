@@ -1,4 +1,4 @@
-package shotener
+package shortener
 
 import "github.com/diyor200/url-shortener/internal/domain"
 

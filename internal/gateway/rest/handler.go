@@ -6,19 +6,19 @@ import (
 )
 
 type Handler struct {
-	Mux  *http.ServeMux
-	tmpl *template.Template
-	//shortenUC shortenUC
+	Mux       *http.ServeMux
+	tmpl      *template.Template
+	shortenUC shortenUC
 }
 
-func NewHandler() *Handler {
+func NewHandler(uc shortenUC) *Handler {
 	mux := http.NewServeMux()
 	fs := http.FileServer(http.Dir("./static"))
 	mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	tmpl := template.Must(template.ParseGlob("./template/index.html"))
 
-	return &Handler{Mux: mux, tmpl: tmpl}
+	return &Handler{Mux: mux, tmpl: tmpl, shortenUC: uc}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
