@@ -6,13 +6,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/diyor200/url-shortener/internal/driver/cache"
-	"github.com/diyor200/url-shortener/internal/repository"
-	"go.uber.org/zap"
-
 	"github.com/diyor200/url-shortener/internal/config"
+	"github.com/diyor200/url-shortener/internal/driver/cache"
 	"github.com/diyor200/url-shortener/internal/gateway/rest"
 	_ "github.com/diyor200/url-shortener/internal/migrations"
+	"github.com/diyor200/url-shortener/internal/repository"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -21,9 +19,6 @@ import (
 func Run() {
 	// parse config
 	cfg := config.NewConfig()
-
-	// configure logger
-	globalLogger, _ := zap.NewProduction()
 
 	// connectDB
 	dbConn, err := connectDB(cfg)
