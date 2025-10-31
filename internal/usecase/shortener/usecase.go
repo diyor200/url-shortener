@@ -2,10 +2,12 @@ package shortener
 
 import (
 	"context"
-	"crypto/md5"
-	"github.com/diyor200/url-shortener/internal/domain"
-	"math/big"
+	"errors"
 	"time"
+
+	"github.com/diyor200/url-shortener/internal/domain"
+	"github.com/diyor200/url-shortener/internal/errs"
+	"github.com/diyor200/url-shortener/internal/helpers"
 )
 
 type urlRepo interface {
@@ -24,38 +26,27 @@ func New(urlRepo urlRepo) *UseCase {
 func (uc *UseCase) Shorten(ctx context.Context, longURL string) (domain.URL, error) {
 	// logic here
 	data := domain.URL{
-		ShortenURL: shortURL(longURL),
-		CreatedAt:  time.Now(),
-		Long:       longURL,
+		Short:     helpers.ShortURL(longURL),
+		CreatedAt: time.Now(),
+		Long:      longURL,
 	}
 
 	id, err := uc.urlRepo.Create(ctx, data)
 	if err != nil {
+		// if duplicate get from db and return it
+		if errors.Is(err, errs.ErrDuplicateData) {
+			return uc.Get(ctx, data.Short)
+		}
+
 		return domain.URL{}, err
 	}
 
 	return domain.URL{
-		ID:         id,
-		Long:       longURL,
-		ShortenURL: data.ShortenURL,
-		CreatedAt:  data.CreatedAt,
+		ID:        id,
+		Long:      longURL,
+		Short:     data.Short,
+		CreatedAt: data.CreatedAt,
 	}, err
-}
-
-const base62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-
-func shortURL(longURL string) string {
-	hash := md5.Sum([]byte(longURL))
-	num := new(big.Int).SetBytes(hash[:])
-
-	var short string
-	for num.Cmp(big.NewInt(0)) > 0 {
-		mod := new(big.Int)
-		num.DivMod(num, big.NewInt(62), mod)
-		short = string(base62[mod.Int64()]) + short
-	}
-
-	return short[:7] // take first 7 chars
 }
 
 func (uc *UseCase) Get(ctx context.Context, short string) (domain.URL, error) {

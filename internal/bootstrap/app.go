@@ -2,15 +2,15 @@ package bootstrap
 
 import (
 	"context"
-	"github.com/diyor200/url-shortener/internal/driver/cache"
-	"github.com/diyor200/url-shortener/internal/repository"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/diyor200/url-shortener/internal/config"
+	"github.com/diyor200/url-shortener/internal/driver/cache"
 	"github.com/diyor200/url-shortener/internal/gateway/rest"
 	_ "github.com/diyor200/url-shortener/internal/migrations"
+	"github.com/diyor200/url-shortener/internal/repository"
 	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"

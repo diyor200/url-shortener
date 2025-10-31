@@ -2,11 +2,12 @@ package repository
 
 import (
 	"context"
+	"log"
+
 	"github.com/diyor200/url-shortener/internal/domain"
 	"github.com/diyor200/url-shortener/internal/errs"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"log"
 )
 
 type Repository struct {
@@ -23,15 +24,15 @@ func (r *Repository) Create(ctx context.Context, data domain.URL) (string, error
 		Collection("url_mapping").
 		InsertOne(ctx, url{
 			LongURL:   data.Long,
-			ShortURL:  data.ShortenURL,
+			ShortURL:  data.Short,
 			CreatedAt: data.CreatedAt,
 		})
 	if err != nil {
-		log.Println("failed to insert url data: err:", err)
-
 		if mongo.IsDuplicateKeyError(err) {
 			return "", errs.ErrDuplicateData
 		}
+		
+		log.Println("failed to insert url data: err:", err)
 		return "", err
 	}
 
@@ -43,7 +44,7 @@ func (r *Repository) GetByShortURL(ctx context.Context, shortURL string) (domain
 	cur, err := r.db.
 		Database("url_shortener").
 		Collection("url_mapping").
-		Find(ctx, bson.M{"shortened_url": shortURL})
+		Find(ctx, bson.M{"short_url": shortURL})
 	if err != nil {
 		log.Println("failed to find url data: err:", err)
 		return domain.URL{}, err

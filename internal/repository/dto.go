@@ -15,9 +15,9 @@ type url struct {
 
 func (u *url) toModel() domain.URL {
 	return domain.URL{
-		ID:         u.ID.String(),
-		Long:       u.LongURL,
-		ShortenURL: u.ShortURL,
-		CreatedAt:  u.CreatedAt,
+		ID:        u.ID.String(),
+		Long:      u.LongURL,
+		Short:     u.ShortURL,
+		CreatedAt: u.CreatedAt,
 	}
 }
