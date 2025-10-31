@@ -37,7 +37,7 @@ func (h *Handler) shorten(w http.ResponseWriter, r *http.Request) {
 
 	url := scheme.URL{
 		ID:        res.ID,
-		ShortURL:  "http://" + r.Host + "/r/" + res.ShortenURL,
+		ShortURL:  "http://" + r.Host + "/r/" + res.Short,
 		LongURL:   res.Long,
 		CreatedAt: scheme.ConvertTimeToString(res.CreatedAt),
 	}
