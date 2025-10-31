@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"github.com/diyor200/url-shortener/internal/driver/cache"
 	"github.com/diyor200/url-shortener/internal/repository"
 	"log"
 	"net/http"
@@ -22,15 +23,16 @@ func Run() {
 	// connectDB
 	dbConn, err := connectDB(cfg)
 
-	cache, err := connectCache(cfg)
+	redisCache, err := connectCache(cfg)
 	if err != nil {
 		log.Fatal("failed to connect cache", err)
 	}
+
 	// repo
 	repo := repository.NewRepository(dbConn)
 
 	// usecases
-	usecases := NewUseCases(repo, cache)
+	usecases := NewUseCases(repo, redisCache)
 
 	// start server
 	handler := rest.NewHandler(usecases.ShortenUC)
@@ -39,11 +41,12 @@ func Run() {
 	loggerMiddleware := handler.LoggingMiddleware(handler.Mux)
 
 	log.Println("Starting server on port 8000")
-	if err := http.ListenAndServe(cfg.HOST+":"+cfg.PORT, loggerMiddleware); err != nil {
+	if err = http.ListenAndServe(cfg.HOST+":"+cfg.PORT, loggerMiddleware); err != nil {
 		log.Fatal(err)
 	}
 
 	// graceful shutdown
+
 	// close dbConn
 	if err = dbConn.Disconnect(context.Background()); err != nil {
 		log.Fatal("failed to disconnect from database", err)
@@ -51,7 +54,7 @@ func Run() {
 	}
 
 	// close cache
-	if err = cache.Close(); err != nil {
+	if err = redisCache.Close(); err != nil {
 		log.Fatal("failed to close cache", err)
 		return
 	}
@@ -81,19 +84,19 @@ func connectDB(cfg *config.Config) (*mongo.Client, error) {
 }
 
 // connect cache
-func connectCache(cfg *config.Config) (*redis.Client, error) {
-	casheDB, _ := strconv.Atoi(cfg.Cache.DB)
-	cache := redis.NewClient(&redis.Options{
+func connectCache(cfg *config.Config) (*cache.Cache, error) {
+	cacheDB, _ := strconv.Atoi(cfg.Cache.DB)
+	client := redis.NewClient(&redis.Options{
 		Addr:     cfg.Cache.Addr,
 		Password: cfg.Cache.Password,
-		DB:       casheDB,
+		DB:       cacheDB,
 	})
 
 	// ping
-	if err := cache.Ping(context.Background()).Err(); err != nil {
+	if err := client.Ping(context.Background()).Err(); err != nil {
 		return nil, err
 	}
 
 	log.Println("successfully connected to cache")
-	return cache, nil
+	return cache.NewCache(client), nil
 }
