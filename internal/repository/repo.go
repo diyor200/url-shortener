@@ -22,12 +22,16 @@ func (r *Repository) Create(ctx context.Context, data domain.URL) (string, error
 		Database("url_shortener").
 		Collection("url_mapping").
 		InsertOne(ctx, url{
-			LongURL:      data.Long,
-			ShortenedURL: data.ShortenURL,
-			CreatedAt:    data.CreatedAt,
+			LongURL:   data.Long,
+			ShortURL:  data.ShortenURL,
+			CreatedAt: data.CreatedAt,
 		})
 	if err != nil {
 		log.Println("failed to insert url data: err:", err)
+
+		if mongo.IsDuplicateKeyError(err) {
+			return "", errs.ErrDuplicateData
+		}
 		return "", err
 	}
 

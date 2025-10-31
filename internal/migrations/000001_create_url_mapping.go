@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func init() {
+func createUrlMapping() {
 	if err := migrate.Register(
 		func(ctx context.Context, db *mongo.Database) error {
 			log.Println("dbname = ", db.Name())
@@ -18,6 +18,7 @@ func init() {
 			return db.Collection("url_mapping").Drop(ctx)
 		}); err != nil {
 		log.Fatal("failed to register migrations", err)
+		return
 	}
 
 	log.Println("✅ Migration registered: create url_mapping collection")
