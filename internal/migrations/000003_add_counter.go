@@ -3,22 +3,18 @@ package migrations
 import (
 	"context"
 	"github.com/rs/zerolog/log"
-
 	migrate "github.com/xakep666/mongo-migrate"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func createUrlMapping() {
+func addCounter() {
 	if err := migrate.Register(
 		func(ctx context.Context, db *mongo.Database) error {
-			return db.CreateCollection(ctx, "url_mapping", nil)
+			coll := db.Collection("url_mapping").
 		},
 		func(ctx context.Context, db *mongo.Database) error {
-			return db.Collection("url_mapping").Drop(ctx)
-		}); err != nil {
-		log.Fatal().Str("failed to create db", err.Error())
-		return
-	}
 
-	log.Info().Str("msg", "✅ Migration registered: create url_mapping collection")
+		}); err != nil {
+		log.Fatal(err)
+	}
 }

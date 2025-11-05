@@ -2,11 +2,11 @@ package migrations
 
 import (
 	"context"
+	"github.com/rs/zerolog/log"
 	migrate "github.com/xakep666/mongo-migrate"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
-	"log"
 )
 
 func createIndex() {
@@ -17,7 +17,7 @@ func createIndex() {
 				Options: options.Index().SetUnique(true),
 			})
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal().Err(err)
 				return err
 			}
 
@@ -26,16 +26,16 @@ func createIndex() {
 		func(ctx context.Context, db *mongo.Database) error {
 			err := db.Collection("url_mapping").Indexes().DropOne(ctx, "short_url")
 			if err != nil {
-				log.Fatal(err)
+				log.Fatal().Err(err)
 				return err
 			}
 
 			return nil
 		},
 	); err != nil {
-		log.Fatal("failed to register migrations", err)
+		log.Fatal().Str("failed to register migrations", err.Error())
 		return
 	}
 
-	log.Println("setting index to short_url and long_url is successful!")
+	log.Info().Str("msg", "setting index to short_url and long_url is successful!")
 }
