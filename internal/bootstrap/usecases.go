@@ -11,7 +11,7 @@ type UseCase struct {
 }
 
 func NewUseCases(repo *repository.Repository, cache *cache.Cache) *UseCase {
-	shortenerUC := shortener.New(repo)
+	shortenerUC := shortener.New(repo, cache)
 
 	return &UseCase{ShortenUC: shortenerUC}
 }

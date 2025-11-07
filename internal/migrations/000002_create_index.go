@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"context"
+
 	"github.com/rs/zerolog/log"
 	migrate "github.com/xakep666/mongo-migrate"
 	"go.mongodb.org/mongo-driver/v2/bson"

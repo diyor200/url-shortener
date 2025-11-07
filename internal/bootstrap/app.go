@@ -2,9 +2,10 @@ package bootstrap
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/diyor200/url-shortener/internal/config"
 	"github.com/diyor200/url-shortener/internal/driver/cache"
@@ -25,7 +26,7 @@ func Run() {
 
 	redisCache, err := connectCache(cfg)
 	if err != nil {
-		log.Fatal("failed to connect cache", err)
+		log.Fatal().Str("failed to connect cache", err.Error())
 	}
 
 	// repo
@@ -40,26 +41,26 @@ func Run() {
 
 	loggerMiddleware := handler.LoggingMiddleware(handler.Mux)
 
-	log.Println("Starting server on port 8000")
+	log.Info().Msg("Starting server on port 8000")
 	if err = http.ListenAndServe(cfg.HOST+":"+cfg.PORT, loggerMiddleware); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err)
 	}
 
 	// graceful shutdown
 
 	// close dbConn
 	if err = dbConn.Disconnect(context.Background()); err != nil {
-		log.Fatal("failed to disconnect from database", err)
+		log.Fatal().Str("failed to disconnect from database", err.Error())
 		return
 	}
 
 	// close cache
 	if err = redisCache.Close(); err != nil {
-		log.Fatal("failed to close cache", err)
+		log.Fatal().Str("failed to close cache", err.Error())
 		return
 	}
 
-	log.Println("Server stopped")
+	log.Info().Msg("Server stopped")
 }
 
 // connect to database
@@ -73,7 +74,7 @@ func connectDB(cfg *config.Config) (*mongo.Client, error) {
 	if err = dbConn.Ping(context.Background(), nil); err != nil {
 		return nil, err
 	}
-	log.Println("successfully connected to database")
+	log.Info().Msg("successfully connected to database")
 
 	// migrate
 	if err = migrateDB(cfg, dbConn); err != nil {
@@ -97,6 +98,6 @@ func connectCache(cfg *config.Config) (*cache.Cache, error) {
 		return nil, err
 	}
 
-	log.Println("successfully connected to cache")
+	log.Info().Msg("successfully connected to cache")
 	return cache.NewCache(client), nil
 }
