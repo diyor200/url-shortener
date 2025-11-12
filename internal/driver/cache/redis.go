@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
@@ -19,11 +20,20 @@ func NewCache(client *redis.Client) *Cache {
 }
 
 func (c *Cache) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
-	return c.client.Set(ctx, key, value, expiration).Err()
+	data, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return c.client.Set(ctx, key, data, expiration).Err()
 }
 
 func (c *Cache) Get(ctx context.Context, key string, val interface{}) error {
-	return c.client.Get(ctx, key).Scan(&val)
+	data, err := c.client.Get(ctx, key).Bytes()
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal(data, val)
 }
 
 func (c *Cache) Del(ctx context.Context, key string) error {

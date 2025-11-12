@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"context"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/rs/zerolog/log"
@@ -23,6 +24,10 @@ func Run() {
 
 	// connectDB
 	dbConn, err := connectDB(cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to connect to database")
+		os.Exit(1)
+	}
 
 	redisCache, err := connectCache(cfg)
 	if err != nil {

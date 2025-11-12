@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/rs/zerolog/log"
 
@@ -21,11 +22,10 @@ func NewRepository(db *mongo.Client) *Repository {
 
 func (r *Repository) Create(ctx context.Context, data domain.URL) (domain.URL, error) {
 	collection := r.db.Database("url_shortener").Collection("url_mapping")
-	res, err := collection.
+	_, err := collection.
 		InsertOne(ctx, url{
 			LongURL:   data.Long,
 			ShortURL:  data.Short,
-			Counter:   1,
 			CreatedAt: data.CreatedAt,
 		})
 	if err != nil {
@@ -45,11 +45,28 @@ func (r *Repository) Create(ctx context.Context, data domain.URL) (domain.URL, e
 	return record.toModel(), nil
 }
 
-func (r *Repository) GetByShortURL(ctx context.Context, shortURL string) (domain.URL, error) {
+func (r *Repository) Get(ctx context.Context, data domain.URL) (domain.URL, error) {
 	collection := r.db.Database("url_shortener").Collection("url_mapping")
-	cur, err := collection.Find(ctx, bson.M{"short_url": shortURL})
+	filter := bson.D{}
+
+	if data.ID != "" {
+		filter = append(filter, bson.E{Key: "_id", Value: data.ID})
+	}
+
+	if data.Long != "" {
+		filter = append(filter, bson.E{Key: "long_url", Value: data.Long})
+	}
+
+	if data.Short != "" {
+		filter = append(filter, bson.E{Key: "short_url", Value: data.Short})
+	}
+
+	cur, err := collection.Find(ctx, filter)
 	if err != nil {
 		log.Error().Str("failed to find url data: err:", err.Error())
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.URL{}, errs.ErrNotFound
+		}
 		return domain.URL{}, err
 	}
 
@@ -77,7 +94,8 @@ func (r *Repository) IncrementCounter(ctx context.Context, shortURL string) erro
 	collection := r.db.Database("url_shortener").
 		Collection("url_mapping")
 
-	_, err := collection.UpdateOne(ctx, shortURL, bson.D{{"$inc", bson.D{{"counter", 1}}}})
+	_, err := collection.UpdateOne(ctx, bson.M{"short_url": shortURL},
+		bson.D{{"$inc", bson.D{{"counter", 1}}}})
 	if err != nil {
 		log.Error().Str("failed to update url data: err:", err.Error())
 		return err

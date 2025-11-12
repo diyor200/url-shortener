@@ -21,7 +21,7 @@ func (h *Handler) redirect(w http.ResponseWriter, r *http.Request) {
 
 	// add check from caching later
 	// get from db
-	data, err := h.shortenUC.Get(r.Context(), key)
+	data, err := h.shortenUC.Shorten(r.Context(), key)
 	if err != nil {
 		if errors.Is(err, errs.ErrNotFound) {
 			http.NotFound(w, r)

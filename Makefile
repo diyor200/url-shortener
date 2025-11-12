@@ -8,3 +8,6 @@ migration:
 	num=$$(printf "%06d" $$next); \
 	touch internal/migrations/$${num}_$(name).go; \
 	echo "Created migrations/$${num}_$(name).go"
+
+run:
+	export $(cat .env) && go run cmd/main.go

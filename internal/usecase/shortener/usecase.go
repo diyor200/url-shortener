@@ -3,6 +3,7 @@ package shortener
 import (
 	"context"
 	"errors"
+	"github.com/diyor200/url-shortener/internal/errs"
 	"time"
 
 	"github.com/diyor200/url-shortener/internal/domain"
@@ -13,7 +14,7 @@ import (
 
 type urlRepo interface {
 	Create(ctx context.Context, data domain.URL) (domain.URL, error)
-	GetByShortURL(ctx context.Context, shortURL string) (domain.URL, error)
+	Get(ctx context.Context, data domain.URL) (domain.URL, error)
 	IncrementCounter(ctx context.Context, shortURL string) error
 }
 
@@ -33,39 +34,50 @@ func New(urlRepo urlRepo, c cache) *UseCase {
 
 func (uc *UseCase) Shorten(ctx context.Context, longURL string) (domain.URL, error) {
 	// get from cache
-	shortURL := ""
-	err := uc.cache.Get(ctx, longURL, &shortURL)
+	var v cacheURL
+	err := uc.cache.Get(ctx, longURL, &v)
 	if err != nil {
 		if !errors.Is(err, redis.Nil) {
+			log.Error().Err(err).Msg("failed to get from cache")
+			return domain.URL{}, err
+		}
+	}
+
+	if v.Short != "" {
+		// increment
+		err = uc.urlRepo.IncrementCounter(ctx, v.Short)
+		if err != nil {
+			log.Error().Err(err)
+		}
+		return domain.URL{Short: v.Short}, nil
+	}
+
+	// get from db if exists
+	res, err := uc.urlRepo.Get(ctx, domain.URL{Long: longURL})
+	if err != nil {
+		if !errors.Is(err, errs.ErrNotFound) {
 			log.Error().Err(err)
 			return domain.URL{}, err
 		}
 	}
 
-	if shortURL != "" {
-		// increment
-		err = uc.urlRepo.IncrementCounter(ctx, shortURL)
-		if err != nil {
-			log.Error().Err(err)
+	if res.ID == "" {
+		v.Short = helpers.ShortURL(longURL)
+		data := domain.URL{
+			Short:     v.Short,
+			CreatedAt: time.Now(),
+			Long:      longURL,
 		}
-		return domain.URL{Short: shortURL}, nil
-	}
 
-	shortURL = helpers.ShortURL(longURL)
-	data := domain.URL{
-		Short:     shortURL,
-		CreatedAt: time.Now(),
-		Long:      longURL,
-	}
-
-	res, err := uc.urlRepo.Create(ctx, data)
-	if err != nil {
-		return domain.URL{}, err
+		res, err = uc.urlRepo.Create(ctx, data)
+		if err != nil {
+			return domain.URL{}, err
+		}
 	}
 
 	if res.Counter >= domain.RateLimit {
 		// save to cache
-		err = uc.cache.Set(ctx, data.Long, data.Short, time.Hour*12)
+		err = uc.cache.Set(ctx, res.Long, &cacheURL{Short: res.Short}, time.Hour*12)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to set data")
 		}
