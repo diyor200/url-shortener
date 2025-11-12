@@ -27,7 +27,8 @@ main {
     margin-bottom: 25px;
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    flex-grow: 1;
+    gap: 5px;
 }
 
 #output-div {
@@ -58,7 +59,7 @@ main {
 }
 
 input[type=text] {
-    width: 70%;
+    flex: 1;
     font-size: 18px;
     padding: 10px;
     border: 1px solid white;
@@ -75,9 +76,9 @@ input[type=text] {
     border: 1px solid #2a9d8f;
     border-radius: 10px;
     padding: 10px;
-    margin-left: 5px;
     display: flex;
     transition-duration: 0.2s;
+    white-space: nowrap;
 }
 
 .button:hover {
@@ -94,5 +95,4 @@ input[type=text] {
 #new-url-label {
     font-size: 18px;
     display: flex;
-
 }
